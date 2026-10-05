@@ -1,0 +1,974 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f5f1ea" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#14111a" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Agenda Leo">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+body{margin:0;-webkit-text-size-adjust:100%}
+img{max-width:100%}
+[hidden]{display:none!important}
+</style>
+<title>Agenda Leo 26.2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Agenda do Leo. Layout: barra do app no topo (título + filtro por matéria); no computador, calendário grande à esquerda e semanas à direita; no celular, três abas (Início, Calendário, Semanas) com barra embaixo. */
+:root{
+  --bg:#f5f1ea; --surface:#fffdf9; --ink:#1c1917; --muted:#6b6259; --line:#e6ded2; --line2:#f1ebe2; --wkd:#f8f3ec; --accent:#7c3aed; --on-accent:#ffffff; --warn:#c2410c; --ok:#15803d; --hol-bg:#fdecea; --hol-bg2:#f9dcd8; --hol-ink:#b42318; --danger:#b42318; --on-cc:#ffffff;
+  --bar:rgba(255,253,249,.86);
+  --shadow:0 1px 2px rgba(16,24,40,.05),0 4px 16px rgba(16,24,40,.05);
+  --c-COM1254:#e11d48; --c-COM1809:#ea580c; --c-CRE1241:#1d4ed8; --c-PUB1673:#15803d; --c-COM1807:#0e7490; --c-OUTRO:#57534e;
+  --f-display:"Fraunces",Georgia,"Times New Roman",serif;
+  --f-body:"Instrument Sans","Segoe UI",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#14111a; --surface:#1d1925; --ink:#efeaf5; --muted:#a59cb3; --line:#2f2939; --line2:#25202e; --wkd:#211c2a; --accent:#b794f6; --on-accent:#14111a; --warn:#ff8a4c; --ok:#4ade80; --hol-bg:#3a1c1c; --hol-bg2:#2c1515; --hol-ink:#ff8a80; --danger:#ff8a80; --on-cc:#14111a;
+  --bar:rgba(29,25,37,.86);
+  --shadow:none;
+  --c-COM1254:#fb7185; --c-COM1809:#fb923c; --c-CRE1241:#7aa2ff; --c-PUB1673:#4ade80; --c-COM1807:#22d3ee; --c-OUTRO:#a8a29e;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#14111a; --surface:#1d1925; --ink:#efeaf5; --muted:#a59cb3; --line:#2f2939; --line2:#25202e; --wkd:#211c2a; --accent:#b794f6; --on-accent:#14111a; --warn:#ff8a4c; --ok:#4ade80; --hol-bg:#3a1c1c; --hol-bg2:#2c1515; --hol-ink:#ff8a80; --danger:#ff8a80; --on-cc:#14111a;
+  --bar:rgba(29,25,37,.86);
+  --shadow:none;
+  --c-COM1254:#fb7185; --c-COM1809:#fb923c; --c-CRE1241:#7aa2ff; --c-PUB1673:#4ade80; --c-COM1807:#22d3ee; --c-OUTRO:#a8a29e;
+  color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5;overscroll-behavior-y:contain}
+.wrap{max-width:1240px;margin:0 auto;padding-inline:20px;padding-block:18px 56px;display:flex;flex-direction:column;gap:18px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+a{color:var(--accent)}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* barra do app */
+.appbar{position:sticky;top:0;z-index:15;background:var(--bar);-webkit-backdrop-filter:saturate(1.6) blur(14px);backdrop-filter:saturate(1.6) blur(14px);border-bottom:1px solid var(--line)}
+.appbar .in{max-width:1240px;margin:0 auto;padding:12px 20px 10px;display:flex;flex-direction:column;gap:10px}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.logo{width:44px;height:46px;border-radius:11px;background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow);display:flex;flex-direction:column;overflow:hidden;flex:none;text-align:center}
+.logo b{background:var(--accent);color:var(--on-accent);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;line-height:14px;font-weight:700}
+.logo span{font-family:var(--f-display);font-weight:700;font-size:21px;line-height:31px;letter-spacing:-.02em}
+.brand h1{font-size:22px;letter-spacing:-.02em;line-height:1.1}
+.status{display:flex;flex-wrap:wrap;align-items:center;gap:2px 10px;margin-top:3px;font-size:12.5px;color:var(--muted);min-width:0}
+.sync{display:inline-flex;align-items:center;gap:5px;border:0;background:none;padding:0;font-size:12.5px;color:var(--muted);cursor:pointer;max-width:100%;min-width:0}
+.sync svg{width:13px;height:13px;flex:none;color:var(--ok)}
+.sync.busy svg{color:var(--accent);animation:spin 1s linear infinite}
+.sync.warn{color:var(--warn);font-weight:600}
+.sync.warn svg{color:var(--warn)}
+.sync.off svg{color:var(--muted)}
+.sync span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-decoration:underline dotted;text-underline-offset:3px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 14px;cursor:pointer;font-size:14px;font-weight:600}
+a.btn{text-decoration:none;color:var(--ink)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.btn.small{padding:5px 10px;font-size:13px}
+.btn.danger{color:var(--danger);border-color:color-mix(in srgb,var(--danger) 45%,transparent)}
+.linkbtn{background:none;border:0;padding:0;color:var(--accent);text-decoration:underline;cursor:pointer;font-size:inherit}
+.mine,.flag{font-size:11px;font-weight:600;border-radius:999px;padding:1px 7px;white-space:nowrap}
+.mine{color:var(--muted);border:1px dashed var(--line)}
+.flag{color:var(--warn);background:color-mix(in srgb,var(--warn) 13%,transparent)}
+
+/* filtro por matéria */
+.filters{display:flex;gap:6px;align-items:center;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;margin-inline:-20px;padding-inline:20px}
+.filters::-webkit-scrollbar{display:none}
+.fchip{display:inline-flex;align-items:center;gap:7px;padding:6px 12px 6px 10px;border-radius:999px;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-size:13.5px;font-weight:500;white-space:nowrap;flex:none;color:var(--ink)}
+.fchip:hover{border-color:color-mix(in srgb,var(--cc,var(--accent)) 50%,var(--line))}
+.fchip[aria-pressed="true"]{background:var(--cc,var(--ink));border-color:var(--cc,var(--ink));color:var(--on-cc);font-weight:600}
+.fchip.all[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--surface)}
+.fchip[aria-pressed="true"] .dot{background:var(--on-cc)}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--cc);flex:none}
+
+/* puxar para verificar */
+.ptr{position:fixed;left:50%;top:env(safe-area-inset-top,0px);z-index:30;transform:translate(-50%,-56px);opacity:0;display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);box-shadow:0 6px 24px rgba(0,0,0,.14);border-radius:999px;padding:8px 14px;font-size:13px;font-weight:600;color:var(--muted);pointer-events:none}
+.ptr svg{width:16px;height:16px;color:var(--accent);transition:transform .2s}
+.ptr.ready svg{transform:rotate(180deg)}
+.ptr.busy svg{animation:spin .9s linear infinite}
+.ptr.anim{transition:transform .25s,opacity .25s}
+
+/* aviso de mudança */
+.alert{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:flex-start;justify-content:space-between;background:color-mix(in srgb,var(--warn) 9%,var(--surface));border:1px solid color-mix(in srgb,var(--warn) 40%,transparent);border-radius:14px;padding:14px 16px}
+.alert>div{flex:1 1 260px;min-width:0}
+.alert ul{margin:6px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:3px}
+.alert .eyebrow{color:var(--warn)}
+
+/* matéria em foco */
+.focus{border-radius:16px;padding:16px 18px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;background:linear-gradient(120deg,color-mix(in srgb,var(--cc) 16%,var(--surface)),var(--surface) 70%);border:1px solid color-mix(in srgb,var(--cc) 35%,var(--line))}
+.focus h2{font-size:22px;letter-spacing:-.01em;color:var(--cc)}
+.focus .meta{font-size:13.5px;color:var(--muted);margin-top:2px}
+.focus .nums{display:flex;gap:18px;margin-top:10px}
+.focus .nums div{display:flex;flex-direction:column;line-height:1.1}
+.focus .nums b{font-family:var(--f-display);font-size:24px}
+.focus .nums span{font-size:12px;color:var(--muted)}
+.focus .acts{display:flex;gap:8px;flex-wrap:wrap}
+
+/* resumo */
+.hero{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow)}
+.next{padding:20px 22px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.next.has{background:linear-gradient(135deg,color-mix(in srgb,var(--cc) 12%,var(--surface)) 0%,var(--surface) 65%);border-color:color-mix(in srgb,var(--cc) 30%,var(--line))}
+.next .big{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.next .count{font-family:var(--f-display);font-weight:700;font-size:clamp(52px,8vw,76px);line-height:.85;letter-spacing:-.04em;color:var(--cc,var(--ink))}
+.next .count small{font-size:.28em;letter-spacing:0;color:var(--muted);margin-left:6px;font-weight:500}
+.next h2{font-size:clamp(20px,2.6vw,26px);line-height:1.15}
+.next .meta{color:var(--muted);font-size:14px;margin-top:4px}
+.next .foot{margin-top:auto;display:flex;flex-direction:column;gap:2px;color:var(--ink);font-size:14px}
+.next .also{font-size:13px;color:var(--muted);border-top:1px solid var(--line2);padding-top:10px}
+.soonbox{padding:16px 18px}
+.soon{display:flex;flex-direction:column;margin-top:6px}
+.soon-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px;align-items:center;border-bottom:1px solid var(--line2)}
+.soon-row .go{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:12px;align-items:center;padding:8px 6px;border:0;background:none;text-align:left;cursor:pointer;border-radius:8px;width:100%;min-width:0}
+.soon-row .go:hover{background:var(--wkd)}
+.soon-row.done .st{text-decoration:line-through;color:var(--muted)}
+.soon-row.done .when{opacity:.5}
+.donebar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;padding-top:10px;border-top:1px dashed var(--line);font-size:13px;color:var(--muted)}
+.next .row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.okbtn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 12px 5px 9px;font-size:13px;font-weight:600;cursor:pointer;color:var(--ink)}
+.okbtn:hover{border-color:var(--ok);color:var(--ok)}
+.okbtn i{width:16px;height:16px;border-radius:50%;border:2px solid currentColor;display:inline-block;opacity:.7}
+.toast{position:fixed;left:50%;bottom:24px;z-index:40;transform:translate(-50%,20px);opacity:0;pointer-events:none;display:flex;align-items:center;gap:14px;background:#1f2633;color:#fff;border-radius:12px;padding:11px 12px 11px 16px;font-size:14px;box-shadow:0 10px 30px rgba(0,0,0,.25);max-width:calc(100vw - 32px);transition:transform .2s,opacity .2s}
+.toast.show{transform:translate(-50%,0);opacity:1;pointer-events:auto}
+.toast span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.toast button{background:none;border:0;color:#8ab4f8;font-weight:700;cursor:pointer;padding:4px 6px;flex:none}
+.tag.donetag{opacity:.4;text-decoration:line-through}
+.soon-row:last-child{border-bottom:0}
+.soon-row .when{display:flex;flex-direction:column;align-items:center;line-height:1;border-radius:9px;padding:5px 0;background:color-mix(in srgb,var(--cc) 13%,transparent);color:var(--cc)}
+.soon-row .when b{font-family:var(--f-display);font-size:19px}
+.soon-row .when span{font-size:10px;text-transform:uppercase;letter-spacing:.06em;margin-top:2px;font-weight:600}
+.soon-row .what{min-width:0;display:flex;flex-direction:column}
+.soon-row .st,.soon-row .sc{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.soon-row .st{font-weight:600}
+.soon-row .sc{font-size:13px;color:var(--muted);display:block}
+.rel{font-size:12px;color:var(--muted);white-space:nowrap}
+.rel.hot{color:var(--warn);font-weight:600}
+
+/* principal */
+.main{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:18px;align-items:start}
+.panel{padding:18px;min-width:0}
+.cal-head{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.cal-head h3{font-size:22px;text-transform:capitalize;margin-right:auto;letter-spacing:-.01em}
+.navbtn{border:1px solid var(--line);background:transparent;border-radius:10px;width:36px;height:36px;cursor:pointer;font-size:17px}
+.navbtn:disabled{opacity:.3;cursor:default}
+.todaybtn{height:36px;padding:0 12px;border:1px solid var(--line);background:transparent;border-radius:10px;cursor:pointer;font-size:13px;font-weight:600}
+.wdrow{display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}
+.wd{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);text-align:center;padding-bottom:6px;font-weight:600}
+.grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--line);gap:1px}
+.day{min-height:92px;padding:5px;display:flex;flex-direction:column;gap:3px;background:var(--surface);border:0;text-align:left;cursor:pointer;min-width:0;position:relative}
+.day:hover{background:color-mix(in srgb,var(--accent) 6%,var(--surface))}
+.day.wkd{background:var(--wkd)}
+.day.out{background:var(--wkd);cursor:default}
+.day.past .num{color:var(--muted)}
+.day.hol{background:repeating-linear-gradient(135deg,var(--hol-bg) 0 6px,var(--hol-bg2) 6px 12px)}
+.day.hol .num{color:var(--hol-ink);font-weight:700}
+.day.sel{box-shadow:inset 0 0 0 2px var(--accent);z-index:1}
+.num{font-size:12px;font-family:var(--f-mono);align-self:flex-start;min-width:22px;text-align:center;border-radius:999px;padding:0 4px;line-height:22px}
+.day.today .num{background:var(--accent);color:var(--on-accent);font-weight:600}
+.tags{display:flex;flex-direction:column;gap:2px;min-width:0}
+.tag{font-size:10.5px;line-height:1.3;padding:1px 5px;border-radius:4px;background:var(--cc);color:var(--on-cc);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
+.tag.lite{background:color-mix(in srgb,var(--cc) 15%,transparent);color:var(--cc)}
+.tag.moved{box-shadow:inset 0 0 0 1.5px var(--warn)}
+.holname,.more{font-size:10px;color:var(--muted);line-height:1.2}
+.holname{color:var(--hol-ink);font-weight:700;margin-top:auto}
+.holname .short{display:none}
+.dayhead{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.dayhead .fer{color:var(--hol-ink);font-weight:700}
+.daybox{margin-top:14px;padding-top:4px;display:flex;flex-direction:column;gap:4px}
+.daybox .empty{color:var(--muted);font-size:14px}
+
+/* lista */
+.list-h{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.toggle{display:inline-flex;gap:8px;align-items:center;font-size:13px;color:var(--muted);cursor:pointer;white-space:nowrap}
+.toggle input{accent-color:var(--accent)}
+.week{display:flex;flex-direction:column}
+.week+.week{margin-top:18px}
+.week-h{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 2px 6px;border-bottom:1px solid var(--line)}
+.week-h .lbl{font-weight:600;font-size:14px}
+.week-h .lbl.now{color:var(--accent)}
+.load{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+.bars{display:flex;gap:3px}
+.bars i{width:7px;height:13px;border-radius:2px;background:var(--line)}
+.bars i.on{background:var(--muted)}
+.week.heavy .bars i.on{background:var(--warn)}
+.week.heavy .load{color:var(--warn);font-weight:600}
+.ev{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 2px;border-radius:10px}
+.ev+.ev{border-top:1px solid var(--line2)}
+.ev.flash{background:color-mix(in srgb,var(--accent) 12%,transparent)}
+.ev .date{display:flex;flex-direction:column;align-items:center;line-height:1;align-self:start;padding:6px 0 5px;border-radius:10px;background:color-mix(in srgb,var(--cc) 13%,transparent);color:var(--cc)}
+.ev .date b{font-family:var(--f-display);font-size:21px;font-weight:700;letter-spacing:-.02em}
+.ev .date span{font-size:10px;text-transform:uppercase;letter-spacing:.06em;margin-top:3px;font-weight:600}
+.ev .body{min-width:0;display:flex;flex-direction:column;gap:3px}
+.ev .line1{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px}
+.ev .title{font-weight:600}
+.ev .sub{font-size:13px;color:var(--muted)}
+.ev .sub a{color:inherit}
+.kind{font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:999px;color:var(--on-cc);background:var(--cc)}
+.kind.soft{background:transparent;color:var(--cc);border:1px solid color-mix(in srgb,var(--cc) 45%,transparent)}
+.course{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted)}
+.ev.done .title{text-decoration:line-through;color:var(--muted)}
+.ev.past{opacity:.55}
+.chk{display:flex;align-items:center;justify-content:center;width:36px;height:36px;cursor:pointer;border-radius:50%}
+.chk input{appearance:none;-webkit-appearance:none;margin:0;width:22px;height:22px;border-radius:50%;border:2px solid var(--line);background:var(--surface) center/14px no-repeat;cursor:pointer}
+.chk:hover input{border-color:var(--muted)}
+.chk input:checked{background-color:var(--ok);border-color:var(--ok);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='white' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3.5 8.5l3 3 6-7'/%3E%3C/svg%3E")}
+
+/* rodapé */
+.lower{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:start}
+.fold{padding:0}
+.fold summary{list-style:none;cursor:pointer;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.fold summary::-webkit-details-marker{display:none}
+.fold summary::after{content:"";width:9px;height:9px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);margin-top:-4px;transition:transform .2s;flex:none}
+.fold[open] summary::after{transform:rotate(-135deg);margin-top:4px}
+.fold h3{font-size:18px}
+.fold .in{padding:0 18px 18px}
+.lower ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px}
+.lower .muted{color:var(--muted);font-size:14px;margin:12px 0 0}
+.src{display:flex;flex-direction:column;gap:8px}
+.src a{display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--ink)}
+.src a:hover span.t{text-decoration:underline}
+
+/* abas do celular */
+.tabbar,#fab{display:none}
+
+@media (max-width:860px){
+  .hero,.main,.lower{grid-template-columns:minmax(0,1fr)}
+  .appbar .in{padding:10px 16px 8px}
+  .filters{margin-inline:-16px;padding-inline:16px}
+  .wrap{padding-inline:16px;padding-block:14px calc(150px + env(safe-area-inset-bottom));gap:14px}
+  body[data-tab="inicio"] [data-tab]:not([data-tab~="inicio"]),
+  body[data-tab="cal"] [data-tab]:not([data-tab~="cal"]),
+  body[data-tab="semanas"] [data-tab]:not([data-tab~="semanas"]){display:none!important}
+  .tabbar{display:grid;grid-template-columns:repeat(3,1fr);position:fixed;left:0;right:0;bottom:0;z-index:15;background:var(--bar);-webkit-backdrop-filter:saturate(1.6) blur(14px);backdrop-filter:saturate(1.6) blur(14px);border-top:1px solid var(--line);padding:6px 8px calc(6px + env(safe-area-inset-bottom))}
+  .tabbar button{display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:0;padding:4px 0;font-size:11px;font-weight:600;color:var(--muted);cursor:pointer}
+  .tabbar svg{width:24px;height:24px}
+  .tabbar button[aria-selected="true"]{color:var(--accent)}
+  .tabbar button[aria-selected="true"] .pill{background:color-mix(in srgb,var(--accent) 16%,transparent)}
+  .tabbar .pill{display:flex;align-items:center;justify-content:center;width:56px;height:30px;border-radius:999px;transition:background .2s}
+  #new-ev{display:none}
+  #fab{display:inline-flex;position:fixed;right:16px;bottom:calc(76px + env(safe-area-inset-bottom));z-index:16;width:58px;height:58px;padding:0;border-radius:18px;font-size:30px;font-weight:400;line-height:1;box-shadow:0 8px 24px rgba(0,0,0,.22)}
+  .panel{padding:14px}
+  .next{padding:18px}
+  .toast{bottom:calc(146px + env(safe-area-inset-bottom))}
+}
+@media (max-width:520px){
+  .logo{width:38px;height:40px;border-radius:10px}
+  .logo span{font-size:18px;line-height:26px}
+  .brand h1{font-size:19px}
+  .brand{gap:10px}
+  .cal-head h3{font-size:20px}
+  .day{min-height:58px;padding:4px 3px;align-items:center}
+  .num{font-size:12px;line-height:24px;min-width:24px;padding:0;align-self:center}
+  .tags{flex-direction:row;flex-wrap:wrap;justify-content:center;gap:3px}
+  .tag{font-size:0;padding:0;width:7px;height:7px;border-radius:50%;background:var(--cc)}
+  .tag.lite{background:transparent;box-shadow:inset 0 0 0 1.5px var(--cc)}
+  .tag.moved{box-shadow:0 0 0 1.5px var(--warn)}
+  .holname{margin-top:auto}
+  .holname .long{display:none}
+  .holname .short{display:inline;font-size:8.5px}
+  .more{display:none}
+  .ev{grid-template-columns:40px minmax(0,1fr) auto;gap:10px}
+}
+/* formulário */
+dialog{border:1px solid var(--line);border-radius:16px;background:var(--surface);color:var(--ink);padding:0;width:min(440px,calc(100vw - 32px));max-height:calc(100dvh - 32px)}
+dialog::backdrop{background:rgba(10,14,22,.45)}
+.ev{cursor:pointer}
+.ev:hover{background:var(--wkd)}
+#det{width:min(400px,calc(100vw - 24px))}
+.det{display:flex;flex-direction:column;gap:12px;padding:18px 18px 16px;border-top:5px solid var(--cc)}
+.det-h{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.det h3{font-size:21px;line-height:1.2;letter-spacing:-.01em;outline:none}
+.xbtn{border:0;background:none;font-size:22px;line-height:1;color:var(--muted);cursor:pointer;padding:2px 6px;border-radius:8px}
+.det dl{margin:0;display:grid;grid-template-columns:auto minmax(0,1fr);gap:7px 14px;font-size:14px}
+.det dt{color:var(--muted);font-size:13px}
+.det dd{margin:0;min-width:0}
+.det .flags{display:flex;flex-wrap:wrap;gap:6px}
+.det-act{display:flex;align-items:center;gap:8px;flex-wrap:wrap;border-top:1px solid var(--line2);padding-top:12px}
+.det-act .sp{flex:1}
+.det-act .chk{width:auto;height:auto;gap:8px;border-radius:999px;padding:4px 10px 4px 6px;border:1px solid var(--line);font-size:13px;font-weight:600}
+@media (max-width:520px){
+  #det{margin:auto 0 0;width:100%;max-width:100%;border-radius:18px 18px 0 0;border-bottom:0;padding-bottom:env(safe-area-inset-bottom)}
+}
+#ev-form{display:flex;flex-direction:column;gap:12px;padding:20px}
+#ev-form h3{font-size:20px}
+#ev-form label{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:600;color:var(--muted);min-width:0}
+#ev-form input,#ev-form select{font:inherit;font-size:16px;font-weight:400;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 10px;width:100%;min-width:0}
+.row2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+.actions{display:flex;align-items:center;gap:8px;margin-top:4px}
+.actions .sp{flex:1}
+.err{margin:0;color:var(--danger);font-size:13px}
+@media (max-width:420px){.row2{grid-template-columns:minmax(0,1fr)}}
+@media (prefers-reduced-motion:no-preference){.ev.flash{transition:background .6s}}
+@media (prefers-reduced-motion:reduce){.sync.busy svg,.ptr.busy svg{animation:none}}
+</style>
+</head>
+<body>
+
+<div class="ptr" id="ptr" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg><span id="ptr-t">Puxe para verificar</span></div>
+
+<header class="appbar">
+  <div class="in">
+    <div class="bar">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"><b id="logo-m"></b><span id="logo-d"></span></div>
+        <div style="min-width:0">
+          <h1>Agenda Leo 26.2</h1>
+          <div class="status">
+            <span>Atualizado: <span class="mono" id="upd"></span></span>
+            <button class="sync" id="sync" type="button" title="Verificar o calendário de provas do CB agora. No celular, puxe a página para baixo."><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg><span id="sync-t">Verificando o CB…</span></button>
+          </div>
+        </div>
+      </div>
+      <button class="btn primary" id="new-ev" type="button">+ Novo evento</button>
+    </div>
+    <nav class="filters" id="filters" aria-label="Ver só uma matéria"></nav>
+  </div>
+</header>
+
+<div class="wrap">
+  <section class="alert" id="changes" hidden aria-live="polite" data-tab="inicio cal semanas">
+    <div><div class="eyebrow">Mudou no calendário do CB</div><ul id="changes-list"></ul></div>
+    <button class="btn small" id="changes-ok" type="button">Entendi</button>
+  </section>
+
+  <section class="focus" id="focus" hidden data-tab="inicio cal semanas"></section>
+
+  <section class="hero" aria-label="Resumo" data-tab="inicio">
+    <div class="card next" id="next"></div>
+    <div class="card soonbox">
+      <div class="eyebrow">Próximos 14 dias</div>
+      <div class="soon" id="soon"></div>
+    </div>
+  </section>
+
+  <section class="main">
+    <div class="card panel" data-tab="cal">
+      <div class="cal-head">
+        <h3 id="mlabel"></h3>
+        <button class="todaybtn" id="gotoday" type="button">Hoje</button>
+        <button class="navbtn" id="prev" aria-label="Mês anterior">‹</button>
+        <button class="navbtn" id="nextm" aria-label="Próximo mês">›</button>
+      </div>
+      <div class="wdrow"><div class="wd">seg</div><div class="wd">ter</div><div class="wd">qua</div><div class="wd">qui</div><div class="wd">sex</div><div class="wd">sáb</div><div class="wd">dom</div></div>
+      <div class="grid" id="cal"></div>
+      <div class="daybox" id="daybox"></div>
+    </div>
+    <div class="card panel" data-tab="semanas">
+      <div class="list-h"><div class="eyebrow">Semana a semana</div><label class="toggle"><input type="checkbox" id="showpast"> Mostrar feitos e o que já passou</label></div>
+      <div id="list"></div>
+    </div>
+  </section>
+
+  <section class="lower" data-tab="inicio">
+    <details class="card fold">
+      <summary><h3>Sem data definida</h3></summary>
+      <div class="in"><ul>
+        <li><b>Mídias Sonoras:</b> nenhuma tarefa nem data no EAD. Os materiais são para exercícios práticos de aula: gravar e editar no Audacity cenas de roteiro ("Relações" e a cena de Match Point, em dupla). Vale perguntar ao professor como vão ser a G1 e a G2.</li>
+        <li><b>Texto Publicitário:</b> quase toda aula (ter/qui) tem exercício feito em sala e enviado no EAD até 17h–18h do mesmo dia, valendo 0,5. A G2 é trabalho principal em grupo, em aula, ainda sem data.</li>
+        <li><b>Linguagem Gráfica:</b> a G1 fecha com "Interação entre Texto e Imagens". "Manipulação de Cores" já foi enviada e não tem prazo. Os trabalhos da G2 ainda não saíram.</li>
+        <li><b>Ética Cristã:</b> precisa fazer 11 das 15 atividades semanais para ter presença. O Questionário da Aula 4 ficou sem fazer, então sobra pouca margem de faltas. Feriado não muda prazo. Passa direto com G1, G2 e G3 maiores ou iguais a 5 ou média 6; senão faz G4 (28–29/11).</li>
+        <li><b>Análise de Tendências:</b> G1 e G2 com o mesmo peso, sem prova final. Grupo do Projeto Leitura: Geração Millennials.</li>
+      </ul></div>
+    </details>
+    <details class="card fold">
+      <summary><h3>Fontes e verificação</h3></summary>
+      <div class="in">
+        <div class="src" id="sources"></div>
+        <p class="muted"><b>De onde vêm as datas:</b> tudo foi lido no EAD em 05/10. O EAD pede login, então a agenda não se atualiza sozinha. Quando sair tarefa nova, adicione em "+ Novo evento" ou edite o evento. Eventos marcados com "data provável" ainda não foram confirmados pelo professor.</p>
+        <p class="muted">Os eventos que você cria ou edita e a marcação de feito ficam salvos só neste aparelho.</p>
+        <p class="muted" id="hidden-info" hidden></p>
+      </div>
+    </details>
+  </section>
+</div>
+
+<dialog id="det" aria-label="Detalhes do evento"><div id="det-in"></div></dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite"><span id="toast-t"></span><button type="button" id="toast-undo">Desfazer</button></div>
+
+<button class="btn primary" id="fab" type="button" aria-label="Novo evento" title="Novo evento">+</button>
+
+<nav class="tabbar" id="tabbar" role="tablist" aria-label="Seções">
+  <button type="button" role="tab" data-go="inicio"><span class="pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg></span>Início</button>
+  <button type="button" role="tab" data-go="cal"><span class="pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="16.5" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/></svg></span>Calendário</button>
+  <button type="button" role="tab" data-go="semanas"><span class="pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h12M9 12h12M9 18h12"/><circle cx="4" cy="6" r="1.3"/><circle cx="4" cy="12" r="1.3"/><circle cx="4" cy="18" r="1.3"/></svg></span>Semanas</button>
+</nav>
+
+<dialog id="form-dlg" aria-labelledby="form-title">
+  <form id="ev-form" novalidate>
+    <h3 id="form-title">Novo evento</h3>
+    <div class="row2">
+      <label for="f-c">Matéria<select id="f-c"></select></label>
+      <label for="f-k">Tipo<select id="f-k"></select></label>
+    </div>
+    <label for="f-t">O que é<input id="f-t" maxlength="80" placeholder="Ex.: P1" autocomplete="off"></label>
+    <div class="row2">
+      <label for="f-d">Data<input id="f-d" type="date"></label>
+      <label for="f-h">Horário e local<input id="f-h" maxlength="60" placeholder="Ex.: 11h · L154" autocomplete="off"></label>
+    </div>
+    <p class="err" id="f-err" hidden></p>
+    <div class="actions">
+      <button type="button" class="btn danger small" id="f-del" hidden>Excluir</button>
+      <button type="button" class="btn small" id="f-reset" hidden>Voltar ao original</button>
+      <span class="sp"></span>
+      <button type="button" class="btn" id="f-cancel">Cancelar</button>
+      <button type="submit" class="btn primary">Salvar</button>
+    </div>
+  </form>
+</dialog>
+<script>
+const $=id=>document.getElementById(id);
+const COURSES={
+  COM1254:{name:"Texto Publicitário",turma:"2IB",detail:"turma 2IB · ter/qui 13h20–15h10 · Tatiana Helich · G1 e G2 = exercícios em aula + trabalho principal",url:"https://ead.puc-rio.br/course/view.php?id=121177"},
+  COM1809:{name:"Linguagem Gráfica",turma:"2IB",detail:"turma 2IB · entregas pelo EAD · G1 = soma de 6 trabalhos (10 pts)",url:"https://ead.puc-rio.br/course/view.php?id=121183"},
+  CRE1241:{name:"Ética Cristã",turma:"6TJ",detail:"online · fórum ou questionário toda semana, vence na segunda · G3 = projeto de extensão",url:"https://ead.puc-rio.br/course/view.php?id=121342"},
+  PUB1673:{name:"Análise de Tendências",turma:"2IA",detail:"turma 2IA · seg/qua · Claudia Brütt · Projeto Leitura em grupo (Geração Millennials)",url:"https://ead.puc-rio.br/course/view.php?id=120581"},
+  COM1807:{name:"Mídias Sonoras",turma:"2IA",detail:"turma 2IA · exercícios práticos em aula (gravação no Audacity) · nenhuma entrega com data no EAD",url:"https://ead.puc-rio.br/course/view.php?id=117302"},
+  OUTRO:{name:"Outros",detail:"eventos criados por você",url:null}
+};
+/* Quando os dados do EAD foram lidos pela última vez. */
+const BASE_ATUALIZADO="2026-10-05T18:50:00-03:00";
+/* Esta agenda não tem calendário do CB para conferir. */
+const CB_ON=false;
+const CB="";
+const CB_JSON=[];
+const EAD="https://ead.puc-rio.br/mod/";
+const A=id=>EAD+"assign/view.php?id="+id, FO=id=>EAD+"forum/view.php?id="+id, QZ=id=>EAD+"quiz/view.php?id="+id;
+const CRONO_ETICA=EAD+"resource/view.php?id=1436596";
+const PROJ_PUB=EAD+"resource/view.php?id=1488114";
+const EXT_ETICA="https://ead.puc-rio.br/course/view.php?id=121551";
+const T_AULA="Tarefa no EAD, feita durante a aula e enviada até o fim da tarde.";
+const ETICA_Q="Questionário no EAD (1 tentativa). Abre na terça e fecha na segunda às 23h59.";
+const ETICA_F="Postar no fórum da aula no EAD. Abre na terça e fecha na segunda às 23h59.";
+
+/* kind: prova | teste | entrega | apres | forum | quiz | prep | aula
+   como: como entregar · est: data provável (ainda não publicada) · ok: já entregue quando a agenda foi montada */
+const BASE=[
+  // Texto Publicitário (COM1254, 2IB)
+  {d:"2026-08-18",c:"COM1254",k:"entrega",t:"Propaganda que gosto e não gosto",h:"até 17h",src:A(1470085),como:"Tarefa no EAD: subir os anúncios escolhidos.",ok:1},
+  {d:"2026-08-25",c:"COM1254",k:"entrega",t:"Texto argumentativo (texto apolíneo)",h:"até 17h",src:A(1471621),como:T_AULA,ok:1},
+  {d:"2026-08-27",c:"COM1254",k:"entrega",t:"Texto pessoal com metáfora ou metonímia",h:"até 17h30",src:A(1475673),como:T_AULA,ok:1},
+  {d:"2026-09-03",c:"COM1254",k:"entrega",t:"Análise dos anúncios que gostam e não gostam",h:"até 18h",src:A(1478465),como:T_AULA,ok:1},
+  {d:"2026-09-10",c:"COM1254",k:"entrega",t:"Exercício Campanha VIVA",h:"até 18h",src:A(1481069),como:T_AULA,ok:1},
+  {d:"2026-09-17",c:"COM1254",k:"entrega",t:"Campanha Água Clara – imagens retóricas",h:"até 18h",src:A(1483751),como:T_AULA,ok:1},
+  {d:"2026-09-24",c:"COM1254",k:"entrega",t:"Exercícios em aula (Delírio Tropical)",h:"até 18h",src:A(1486035),como:T_AULA,ok:1},
+  {d:"2026-10-01",c:"COM1254",k:"prep",t:"Aula de revisão para a G1",h:"13h20 · slides no EAD (Aula 16)",src:EAD+"resource/view.php?id=1488243"},
+  {d:"2026-10-06",c:"COM1254",k:"prova",t:"G1 – trabalho principal individual, em aula",h:"13h20 · em sala",src:"https://ead.puc-rio.br/course/view.php?id=121177",est:1,
+   como:"Feito em sala, individual. A professora ainda não publicou o dia: 06/10 é a primeira aula depois da revisão. Confirmar."},
+  // Linguagem Gráfica (COM1809, 2IB)
+  {d:"2026-08-18",c:"COM1809",k:"entrega",t:"Cartaz Tipográfico (1 pt)",h:"até 23h59",src:A(1462167),como:"Tarefa no EAD: pôster A4 feito no Canva, só texto e formas básicas.",ok:1},
+  {d:"2026-08-28",c:"COM1809",k:"entrega",t:"Cartaz Na Rota pelo Respeito (1 pt)",h:"até 23h59",src:A(1474086),como:"Tarefa no EAD: nova versão do cartaz em A4, com a foto da mulher obrigatória.",ok:1},
+  {d:"2026-09-10",c:"COM1809",k:"entrega",t:"Mockup no Photoshop (2 pts)",h:"até 23h59",src:A(1480639),como:"Aplicar os 2 cartazes em mockups, exportar PNG e enviar na tarefa do EAD.",ok:1},
+  {d:"2026-09-11",c:"COM1809",k:"entrega",t:"Lettering para abertura (2 pts)",h:"até 07h36",src:A(1477077),como:"Tarefa no EAD: vídeo de abertura (Canva, CapCut ou Premiere) + um parágrafo explicando o conceito.",ok:1},
+  {d:"2026-09-24",c:"COM1809",k:"entrega",t:"Natura – colagem digital (2 pts)",h:"até 23h59",src:A(1483535),como:"Tarefa no EAD: anúncio do kit Una Blush feito no Photoshop.",ok:1},
+  {d:"2026-10-05",c:"COM1809",k:"entrega",t:"Interação entre Texto e Imagens (2 pts)",h:"até 23h59 · turma 2IB",src:A(1487911),como:"Tarefa no EAD da turma 2IB: 2 anúncios do exercício \"Imagens à procura de texto\". Fecha a G1."},
+  // Ética Cristã (CRE1241, online)
+  {d:"2026-08-10",c:"CRE1241",k:"forum",t:"Fórum de Apresentação",h:"até 15h",src:FO(1436602),como:"Postar no fórum de apresentação do EAD. Não vale nota.",aviso:"não feito no EAD"},
+  {d:"2026-08-17",c:"CRE1241",k:"forum",t:"Aula 1 – Fórum: etimologia da palavra \"Ética\" (1 pt)",h:"até 23h59",src:FO(1436611),como:ETICA_F,ok:1},
+  {d:"2026-08-24",c:"CRE1241",k:"forum",t:"Aula 2 – Fórum: a Ética e seu desenvolvimento histórico (1 pt)",h:"até 23h59",src:FO(1436613),como:ETICA_F,ok:1},
+  {d:"2026-08-31",c:"CRE1241",k:"forum",t:"Aula 3 – Fórum: a ética hoje (1 pt)",h:"até 23h59",src:FO(1436615),como:ETICA_F,ok:1},
+  {d:"2026-09-07",c:"CRE1241",k:"quiz",t:"Aula 4 – Questionário (2 pts)",h:"até 23h59",src:QZ(1436618),como:ETICA_Q+" Este não foi feito: o EAD mostra como pendente e já fechou.",aviso:"não feito no EAD"},
+  {d:"2026-09-14",c:"CRE1241",k:"forum",t:"Aula 5 – Fórum: a pessoa humana e suas relações (2 pts)",h:"até 23h",src:FO(1436620),como:ETICA_F,ok:1},
+  {d:"2026-09-21",c:"CRE1241",k:"forum",t:"Aula 6 – Fórum: Ética e Direitos Humanos (2 pts)",h:"até 23h",src:FO(1436622),como:ETICA_F,ok:1},
+  {d:"2026-09-28",c:"CRE1241",k:"forum",t:"Aula 7 – Fórum: virtudes éticas (1 pt)",h:"até 23h59",src:FO(1436624),como:ETICA_F,ok:1},
+  {d:"2026-10-05",c:"CRE1241",k:"quiz",t:"Aula 8 – Questionário (1 pt)",h:"até 23h59",src:QZ(1436627),como:ETICA_Q,ok:1},
+  {d:"2026-10-12",c:"CRE1241",k:"quiz",t:"Aula 9 – Questionário (1 pt)",h:"abre 06/10 · até 23h59",src:CRONO_ETICA,como:ETICA_Q},
+  {d:"2026-10-12",c:"CRE1241",k:"entrega",t:"Aula 9 – Tarefa da Semana da CRE (2 pts)",h:"abre 06/10 · até 23h59",src:CRONO_ETICA,como:"Tarefa no EAD que sai junto com a Aula 9. O enunciado ainda não foi publicado."},
+  {d:"2026-10-19",c:"CRE1241",k:"quiz",t:"Aula 10 – Questionário: escolas éticas (1 pt)",h:"abre 13/10 · até 23h59",src:CRONO_ETICA,como:ETICA_Q},
+  {d:"2026-10-24",c:"CRE1241",k:"entrega",t:"Extensão – escolher o grupo do projeto (G3)",h:"até 23h59",src:EAD+"choicegroup/view.php?id=1487701",como:"No espaço da Jornada de Extensão, escolher um grupo da turma 6TJ. Sem grupo, não dá para fazer o projeto."},
+  {d:"2026-10-26",c:"CRE1241",k:"forum",t:"Aula 11 – Fórum: ética latino-americana (1 pt)",h:"abre 20/10 · até 23h59",src:CRONO_ETICA,como:ETICA_F},
+  {d:"2026-11-02",c:"CRE1241",k:"forum",t:"Aula 12 – Fórum: a ética de Jesus de Nazaré (1 pt)",h:"abre 27/10 · até 23h59",src:CRONO_ETICA,como:ETICA_F+" Feriado não muda o prazo."},
+  {d:"2026-11-09",c:"CRE1241",k:"forum",t:"Aula 13 – Fórum: testemunhos éticos (1 pt)",h:"abre 03/11 · até 23h59",src:CRONO_ETICA,como:ETICA_F},
+  {d:"2026-11-15",c:"CRE1241",k:"entrega",t:"G3 – Projeto de Extensão em grupo",h:"no fórum do grupo",src:EXT_ETICA,est:1,
+   como:"Projeto em grupo para o Santuário Cristo Redentor, feito no fórum do grupo. Todo mundo precisa postar (conta como participação para o MEC). O cronograma diz \"até 15/11, confirmação durante o semestre\"."},
+  {d:"2026-11-16",c:"CRE1241",k:"quiz",t:"Aula 14 – Questionário (1 pt)",h:"abre 10/11 · até 23h59",src:CRONO_ETICA,como:ETICA_Q},
+  {d:"2026-11-23",c:"CRE1241",k:"quiz",t:"Aula 15 – Questionário (1 pt)",h:"abre 17/11 · até 23h59",src:CRONO_ETICA,como:ETICA_Q},
+  {d:"2026-11-28",c:"CRE1241",k:"prova",t:"G4 – só se não fechar a média",h:"28 e 29/11",src:CRONO_ETICA,como:"Só faz quem não tiver G1, G2 e G3 maiores ou iguais a 5 ou média final de pelo menos 6."},
+  // Análise de Tendências (PUB1673) – Projeto Leitura em grupo
+  {d:"2026-10-05",c:"PUB1673",k:"entrega",t:"G1 – Projeto de pesquisa (Projeto Leitura, 6 pts)",h:"em grupo · sem apresentação",src:PROJ_PUB,
+   como:"Entregar as primeiras etapas do projeto (passos 1 a 5 do manual \"Como elaborar uma pesquisa de mercado\", SEBRAE). Não tem tarefa no EAD: confirmar com a professora se é por e-mail ou em aula. Grupo: Geração Millennials."},
+  {d:"2026-11-04",c:"PUB1673",k:"entrega",t:"G2 – Relatório de andamento (3 pts)",h:"em grupo · sem apresentação",src:PROJ_PUB,como:"Relatório com o questionário e/ou o roteiro da pesquisa. Não tem tarefa no EAD: confirmar a forma de entrega."},
+  {d:"2026-11-25",c:"PUB1673",k:"apres",t:"G2 – Apresentações finais, 1º dia (7 pts)",h:"em aula · inclui o perfil da geração",src:PROJ_PUB,como:"Apresentação da pesquisa do grupo. A ordem dos grupos entre 25/11 e 30/11 ainda não foi divulgada."},
+  {d:"2026-11-30",c:"PUB1673",k:"apres",t:"G2 – Apresentações finais, 2º dia (7 pts)",h:"em aula · inclui o perfil da geração",src:PROJ_PUB,como:"Apresentação da pesquisa do grupo. A ordem dos grupos entre 25/11 e 30/11 ainda não foi divulgada."}
+];
+BASE.forEach(e=>{e.bk=e.d+"|"+e.c+"|"+e.t});
+let EVENTS=[];
+
+const HOLIDAYS={"2026-10-12":"N. Sra. Aparecida","2026-10-15":"Dia do Professor","2026-11-02":"Finados","2026-12-08":"Imac. Conceição"};
+const KIND={prova:"Prova",teste:"Teste",entrega:"Entrega",apres:"Apresentação",forum:"Fórum",quiz:"Questionário",prep:"Revisão",aula:"Aula",outro:"Outro"};
+/* tipos que valem nota (aparecem cheios no calendário e entram em "Próximo prazo") */
+const MAJOR=k=>["prova","teste","entrega","apres","forum","quiz"].includes(k);
+const WEIGHT={prova:2,teste:1,entrega:1,apres:2,forum:1,quiz:1,prep:0,aula:0,outro:0};
+const KIND_FORM=["entrega","forum","quiz","apres","prova","outro"];
+const WD=["dom","seg","ter","qua","qui","sex","sáb"];
+const MON=["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];
+const MONL=["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
+
+const parse=s=>{const[y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d)};
+const iso=dt=>dt.getFullYear()+"-"+String(dt.getMonth()+1).padStart(2,"0")+"-"+String(dt.getDate()).padStart(2,"0");
+const now=new Date();const TODAY=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+const days=s=>Math.round((parse(s)-TODAY)/864e5);
+const rel=n=>n===0?"hoje":n===1?"amanhã":n===-1?"ontem":n>0?`em ${n} dias`:`há ${-n} dias`;
+const p2=n=>String(n).padStart(2,"0");
+const dm=s=>{const d=parse(s);return p2(d.getDate())+"/"+p2(d.getMonth()+1)};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const cc=c=>`style="--cc:var(--c-${c})"`;
+const short=t=>t.split(" (")[0];
+const key=e=>e.id||e.bk||("cb|"+e.c+"|"+e.cb);
+function when(t){
+  const d=new Date(t.getFullYear(),t.getMonth(),t.getDate()),n=Math.round((d-TODAY)/864e5);
+  const hm=`${p2(t.getHours())}h${p2(t.getMinutes())}`;
+  return n===0?`hoje, ${hm}`:n===-1?`ontem, ${hm}`:`${p2(t.getDate())}/${p2(t.getMonth()+1)}, ${hm}`;
+}
+const store={
+  get(k,def){try{const v=localStorage.getItem(k);return v==null?def:JSON.parse(v)}catch(e){return def}},
+  set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+};
+
+let done=store.get("leo20262-done",null);
+if(!done||typeof done!=="object"){done={};BASE.forEach(e=>{if(e.ok)done[e.bk]=1});try{localStorage.setItem("leo20262-done",JSON.stringify(done))}catch(e){}}
+const saveDone=()=>store.set("leo20262-done",done);
+
+/* Eventos criados por você: ficam no localStorage deste aparelho. */
+let custom=store.get("leo20262-custom",[]);custom=Array.isArray(custom)?custom.filter(e=>e&&e.id&&e.d&&e.t&&COURSES[e.c]):[];
+let userUpdated=null;try{userUpdated=localStorage.getItem("leo20262-atualizado")}catch(e){}
+function saveCustom(){
+  userUpdated=new Date().toISOString();
+  store.set("leo20262-custom",custom);
+  try{localStorage.setItem("leo20262-atualizado",userUpdated)}catch(e){}
+  renderUpdated();
+}
+/* Edições que você faz nos eventos que já vinham na agenda (chave fixa do evento -> campos novos ou {hidden:true}). */
+let edits=store.get("leo20262-edits",{});if(!edits||typeof edits!=="object"||Array.isArray(edits))edits={};
+const saveEdits=()=>{store.set("leo20262-edits",edits);saveCustom()};
+const allEvents=()=>EVENTS.filter(e=>!e.hidden).concat(custom).sort((a,b)=>a.d.localeCompare(b.d));
+const findEv=k=>EVENTS.concat(custom).find(e=>key(e)===k);
+
+/* ---------- conferência com o calendário do CB ---------- */
+const cb={data:null,changes:[],busy:false,err:false,at:0,p:null};
+const validCB=j=>j&&typeof j.lido_em==="string"&&!isNaN(new Date(j.lido_em))&&Array.isArray(j.provas)&&
+  j.provas.every(p=>p&&typeof p.codigo==="string"&&typeof p.avaliacao==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(p.data));
+{const c=store.get("leo20262-cb",null);if(validCB(c))cb.data=c}
+function horCB(h){
+  if(!h)return "";const m=/^(\d{1,2})\s*-\s*(\d{1,2})(?::(\d{2}))?\s*H$/i.exec(h.trim());
+  if(m)return `${m[1]}h–${m[2]}h${m[3]||""}`;
+  return /hor[áa]rio de aula/i.test(h)?"horário de aula":h;
+}
+function applyCB(){
+  EVENTS=BASE.map(e=>({...e}));cb.changes=[];
+  if(cb.data){
+    const used=new Set();
+    const label=e=>e.cb||e.t.split(/[ (]/)[0];
+    for(const p of cb.data.provas){
+      const C=COURSES[p.codigo];
+      if(!C||p.codigo==="OUTRO")continue;
+      /* linha de outra turma da mesma matéria */
+      if(p.turmas&&!/TODAS/i.test(p.turmas)&&!p.turmas.toUpperCase().split(/[^A-Z0-9]+/).includes(C.turma))continue;
+      const e=EVENTS.find(x=>!used.has(x)&&x.c===p.codigo&&(x.k==="prova"||x.k==="teste")&&label(x)===p.avaliacao);
+      if(e){
+        used.add(e);
+        if(e.d!==p.data){cb.changes.push({tipo:"data",c:e.c,t:short(e.t),de:e.d,para:p.data});e.moved=e.d;e.d=p.data;e.src=CB}
+      }else{
+        const n={d:p.data,c:p.codigo,k:/^T/i.test(p.avaliacao)?"teste":"prova",t:p.avaliacao,h:horCB(p.horario),src:CB,cb:p.avaliacao,novo:true,bk:"cb|"+p.codigo+"|"+p.avaliacao};
+        EVENTS.push(n);used.add(n);cb.changes.push({tipo:"novo",c:n.c,t:n.t,para:n.d});
+      }
+    }
+    for(const e of EVENTS)if(e.cb&&!used.has(e)){e.gone=true;cb.changes.push({tipo:"sumiu",c:e.c,t:short(e.t),de:e.d})}
+  }
+  for(const e of EVENTS){
+    const o=edits[key(e)];if(!o)continue;
+    if(o.hidden){e.hidden=true;continue}
+    for(const f of ["d","t","h","c","k"])if(typeof o[f]==="string"&&(f!=="c"||COURSES[o[f]]))e[f]=o[f];
+    e.edited=true;
+  }
+  EVENTS.sort((a,b)=>a.d.localeCompare(b.d));
+}
+async function fetchCB(){
+  for(const u of CB_JSON){
+    const ctl=typeof AbortController==="function"?new AbortController():null;
+    const tm=ctl&&setTimeout(()=>ctl.abort(),8000);
+    try{
+      const r=await fetch(u+"?t="+Date.now(),{cache:"no-store",signal:ctl&&ctl.signal});
+      if(r.ok){const j=await r.json();if(validCB(j))return j}
+    }catch(e){}finally{if(tm)clearTimeout(tm)}
+  }
+  return null;
+}
+function checkCB(){
+  if(cb.busy)return cb.p;
+  cb.busy=true;renderSync();
+  cb.p=fetchCB().then(j=>{
+    cb.busy=false;cb.at=Date.now();cb.err=!j;
+    if(j&&(!cb.data||new Date(j.lido_em)>=new Date(cb.data.lido_em))){cb.data=j;store.set("leo20262-cb",j)}
+    applyCB();renderUpdated();renderAll();renderSync();renderChanges();renderHidden();
+  });
+  return cb.p;
+}
+const sigCB=()=>JSON.stringify(cb.changes.map(x=>[x.tipo,x.c,x.t,x.de||"",x.para||""]));
+function renderChanges(){
+  const el=$("changes");
+  if(!cb.changes.length||store.get("leo20262-cbvisto","")===sigCB()){el.hidden=true;return}
+  $("changes-list").innerHTML=cb.changes.map(x=>{
+    const n=`<b>${esc(COURSES[x.c].name)} · ${esc(x.t)}</b>`;
+    return x.tipo==="data"?`<li>${n}: ${dm(x.de)} → <b>${dm(x.para)}</b></li>`:
+      x.tipo==="novo"?`<li>${n}: nova, em <b>${dm(x.para)}</b></li>`:`<li>${n} (${dm(x.de)}) não aparece mais no CB</li>`;
+  }).join("");
+  el.hidden=false;
+}
+function renderSync(){
+  const b=$("sync");let t;
+  if(!CB_ON){b.hidden=true;return}
+  b.classList.toggle("busy",cb.busy);
+  b.classList.toggle("warn",!cb.busy&&cb.changes.length>0);
+  b.classList.toggle("off",!cb.busy&&!cb.data);
+  if(cb.busy)t="Verificando o CB…";
+  else if(!cb.data)t=cb.err?"Não deu para verificar o CB agora":"CB ainda não verificado";
+  else{
+    const n=cb.changes.length;
+    const lido=new Date(cb.data.lido_em),velho=Date.now()-lido>20*3600e3;
+    t=(cb.err||!cb.at?`CB lido ${when(lido)}`:`Conferido ${when(new Date(cb.at))}`)+" · "+(n?`${n} ${n>1?"mudanças":"mudança"}`:"sem mudanças")+
+      (cb.err?" · sem conexão agora":velho?` · CB lido ${when(lido)}`:"");
+    b.title=`Última leitura do calendário do CB: ${when(lido)}. Toque para conferir de novo.`;
+  }
+  $("sync-t").textContent=t;
+}
+function renderUpdated(){
+  let t=new Date(BASE_ATUALIZADO);
+  const cand=[userUpdated,cb.changes.length&&cb.data?cb.data.lido_em:null];
+  for(const s of cand){if(!s)continue;const u=new Date(s);if(!isNaN(u)&&u>t)t=u}
+  $("upd").textContent=`${p2(t.getDate())}/${p2(t.getMonth()+1)}/${t.getFullYear()}, ${p2(t.getHours())}h${p2(t.getMinutes())}`;
+}
+applyCB();
+
+const state={only:null,past:false,sel:null,month:null,tab:"inicio",showDone:false};
+function monthBounds(){
+  const ds=allEvents().map(e=>e.d);const mi=s=>{const d=parse(s);return d.getFullYear()*12+d.getMonth()};
+  return [Math.min(2026*12+7,...ds.map(mi)),Math.max(2026*12+11,...ds.map(mi))];
+}
+{const m=TODAY.getFullYear()*12+TODAY.getMonth();const [lo,hi]=monthBounds();state.month=Math.min(hi,Math.max(lo,m));}
+
+/* matéria em foco: null = todas */
+const visible=()=>allEvents().filter(e=>!state.only||e.c===state.only);
+
+function renderNext(){
+  const up=visible().filter(e=>days(e.d)>=0&&MAJOR(e.k)&&!e.gone&&!done[key(e)]);
+  const el=$("next");
+  if(!up.length){el.className="card next";el.removeAttribute("style");el.innerHTML=`<div class="eyebrow">Próximo prazo</div><h2>Nada pela frente${state.only?" nesta matéria":""}.</h2>`;return}
+  const e=up[0],n=days(e.d),d=parse(e.d),C=COURSES[e.c];
+  const same=up.filter(x=>x.d===e.d&&x!==e);
+  const ent=up.find(x=>x.d!==e.d);
+  el.className="card next has";
+  el.setAttribute("style",`--cc:var(--c-${e.c})`);
+  el.innerHTML=`<div class="row"><div class="eyebrow">Próximo prazo</div><button type="button" class="okbtn" data-ok="${esc(key(e))}"><i></i>Já fiz</button></div>
+   <div class="big"><div class="count">${n===0?"Hoje":n}${n>0?`<small>${n===1?"dia":"dias"}</small>`:""}</div>
+   <div><h2>${esc(C.name)} · ${esc(short(e.t))}</h2>
+   <div class="meta">${WD[d.getDay()]}, ${dm(e.d)}${e.h?` · ${esc(e.h)}`:""}${e.moved?` · <span class="flag">data mudou</span>`:""}${e.est?` · <span class="flag">data provável</span>`:""}</div></div></div>
+   ${same.length?`<div class="also">No mesmo dia: ${same.map(x=>esc(COURSES[x.c].name+" "+short(x.t))).join(", ")}</div>`:""}
+   ${ent?`<div class="also foot"><span class="eyebrow">Depois</span><span><b>${esc(ent.t)}</b> · ${esc(COURSES[ent.c].name)} · ${WD[parse(ent.d).getDay()]}, ${dm(ent.d)} · <span class="rel ${days(ent.d)<=3?"hot":""}">${rel(days(ent.d))}</span></span></div>`:""}`;
+  el.querySelectorAll("[data-ok]").forEach(b=>b.onclick=()=>setDone(b.dataset.ok,true,short(e.t)));
+}
+function renderSoon(){
+  const el=$("soon");
+  const all=visible().filter(e=>{const n=days(e.d);return n>=0&&n<=14&&e.k!=="prep"&&!e.gone});
+  const feitos=all.filter(e=>done[key(e)]);
+  const up=state.showDone?all:all.filter(e=>!done[key(e)]);
+  el.innerHTML=(up.length?up.map(e=>{const n=days(e.d),d=parse(e.d),k=key(e),f=!!done[k];return `<div class="soon-row ${f?"done":""}" ${cc(e.c)}>
+    <button type="button" class="go" data-ev="${esc(k)}"><div class="when"><b>${d.getDate()}</b><span>${WD[d.getDay()]}</span></div>
+    <div class="what"><span class="st">${esc(e.t)}</span><span class="sc"><span class="dot"></span>${esc(COURSES[e.c].name)}</span></div>
+    <div class="rel ${n<=3&&!f?"hot":""}">${f?"feito":rel(n)}</div></button>
+    <label class="chk" title="${f?"Desmarcar":"Marcar como feito"}"><input type="checkbox" data-k="${esc(k)}" data-t="${esc(short(e.t))}" ${f?"checked":""}><span class="sr">feito</span></label></div>`}).join(""):`<p style="color:var(--muted);margin:8px 0 0">${feitos.length?"Tudo feito nos próximos 14 dias.":"Nada marcado nos próximos 14 dias."}</p>`)+
+    (feitos.length?`<div class="donebar"><span>✓ ${feitos.length} ${feitos.length>1?"feitos":"feito"} ${state.showDone?"":"escondido"+(feitos.length>1?"s":"")}</span><button type="button" class="linkbtn" id="tg-done">${state.showDone?"Esconder":"Mostrar"}</button></div>`:"");
+  bindChecks(el);
+  if($("tg-done"))$("tg-done").onclick=()=>{state.showDone=!state.showDone;renderSoon()};
+  el.querySelectorAll(".go[data-ev]").forEach(b=>b.onclick=()=>openDet(b.dataset.ev));
+}
+function renderFilters(){
+  const el=$("filters");
+  el.innerHTML=`<button class="fchip all" data-c="" aria-pressed="${!state.only}">Todas</button>`+
+    Object.entries(COURSES).filter(([c])=>c!=="OUTRO"||custom.some(e=>e.c==="OUTRO")).map(([c,C])=>`<button class="fchip" ${cc(c)} data-c="${c}" aria-pressed="${state.only===c}"><span class="dot"></span>${esc(C.name)}</button>`).join("");
+  el.querySelectorAll(".fchip").forEach(b=>b.onclick=()=>{const c=b.dataset.c;setOnly(!c||state.only===c?null:c)});
+  const on=el.querySelector('[aria-pressed="true"]');if(on&&on.scrollIntoView)on.scrollIntoView({block:"nearest",inline:"nearest"});
+}
+function setOnly(c){
+  state.only=c;state.sel=null;
+  if(c){const n=allEvents().find(e=>e.c===c&&days(e.d)>=0);if(n){const d=parse(n.d);state.month=d.getFullYear()*12+d.getMonth()}}
+  renderAll();
+}
+function renderFocus(){
+  const el=$("focus"),c=state.only;
+  if(!c){el.hidden=true;el.removeAttribute("style");return}
+  const C=COURSES[c],up=allEvents().filter(e=>e.c===c&&days(e.d)>=0&&!e.gone&&!done[key(e)]);
+  const n=k=>up.filter(e=>k.includes(e.k)).length;
+  const nx=up.find(e=>MAJOR(e.k));
+  el.setAttribute("style",`--cc:var(--c-${c})`);
+  el.innerHTML=`<div><div class="eyebrow">Só esta matéria</div><h2>${esc(C.name)}</h2><div class="meta">${esc(C.detail)}</div>
+    <div class="nums"><div><b>${n(["entrega"])}</b><span>entregas</span></div><div><b>${n(["forum","quiz"])}</b><span>fóruns e quest.</span></div><div><b>${n(["prova","teste","apres"])}</b><span>provas e apres.</span></div></div>
+    ${nx?`<div class="meta" style="margin-top:8px">Próxima: <b style="color:var(--ink)">${esc(short(nx.t))}</b> · ${WD[parse(nx.d).getDay()]}, ${dm(nx.d)} · ${rel(days(nx.d))}</div>`:""}</div>
+    <div class="acts">${C.url?`<a class="btn small" href="${C.url}" target="_blank" rel="noopener">Abrir no EAD</a>`:""}<button class="btn small" type="button" id="focus-x">Ver todas</button></div>`;
+  el.hidden=false;
+  $("focus-x").onclick=()=>setOnly(null);
+}
+function goDay(s){
+  state.sel=s;const d=parse(s);state.month=d.getFullYear()*12+d.getMonth();
+  renderCal();renderDay();setTab("cal");
+  if(matchMedia("(min-width:861px)").matches)$("cal").scrollIntoView({behavior:"smooth",block:"center"});
+}
+function evHTML(e){
+  const d=parse(e.d),n=days(e.d),k=key(e),C=COURSES[e.c];
+  const flag=e.aviso?`<span class="flag">${esc(e.aviso)}</span>`:e.est?`<span class="flag">data provável</span>`:e.moved?`<span class="flag">data mudou · era ${dm(e.moved)}</span>`:e.novo?`<span class="flag">novo no CB</span>`:e.gone?`<span class="flag">sumiu do CB</span>`:"";
+  return `<div class="ev ${n<0?"past":""} ${done[k]?"done":""}" ${cc(e.c)} data-date="${e.d}" data-ev="${esc(k)}">
+   <div class="date"><b>${d.getDate()}</b><span>${WD[d.getDay()]}</span></div>
+   <div class="body">
+     <div class="line1"><span class="kind ${MAJOR(e.k)?"":"soft"}">${KIND[e.k]||"Outro"}</span><span class="title">${esc(e.t)}</span>${e.id?`<span class="mine">criado por você</span>`:e.edited?`<span class="mine">editado</span>`:""}${flag}</div>
+     <div class="sub"><span class="course"><span class="dot"></span>${esc(C.name)}</span>${e.h?` · ${esc(e.h)}`:""} · <span class="rel ${n>=0&&n<=3?"hot":""}">${rel(n)}</span></div>
+   </div>
+   <label class="chk" title="${done[k]?"Feito":"Marcar como feito"}"><input type="checkbox" data-k="${esc(k)}" ${done[k]?"checked":""}><span class="sr">feito</span></label></div>`;
+}
+function bindChecks(root){
+  root.querySelectorAll('input[data-k]').forEach(i=>i.onchange=()=>{
+    const row=i.closest(".ev,.soon-row"),t=i.dataset.t||(row&&row.querySelector(".title,.st")?.textContent)||"";
+    setDone(i.dataset.k,i.checked,t);
+  });
+  root.querySelectorAll('.ev[data-ev]').forEach(r=>r.onclick=ev=>{if(ev.target.closest(".chk,a,button,input"))return;openDet(r.dataset.ev)});
+}
+/* marcar e desmarcar como feito (com Desfazer) */
+let toastTimer=null;
+function setDone(k,on,t){
+  if(on)done[k]=1;else delete done[k];
+  saveDone();renderNext();renderSoon();renderCal();renderDay();renderList();renderFocus();
+  if(!on){hideToast();return}
+  toast(`"${short(t||"Evento")}" marcado como feito`,()=>setDone(k,false));
+}
+function toast(msg,undo){
+  $("toast-t").textContent=msg;$("toast").classList.add("show");
+  $("toast-undo").hidden=!undo;$("toast-undo").onclick=()=>{hideToast();if(undo)undo()};
+  clearTimeout(toastTimer);toastTimer=setTimeout(hideToast,6000);
+}
+/* detalhes do evento */
+const det=$("det");
+function openDet(k){
+  const e=findEv(k);if(!e)return;
+  const d=parse(e.d),n=days(e.d),C=COURSES[e.c],f=!!done[k];
+  const flags=[e.id?"criado por você":"",e.edited?"editado por você":"",e.est?"data provável: confirmar":"",e.aviso||"",e.moved?`data mudou no CB (era ${dm(e.moved)})`:"",e.novo?"novo no CB":"",e.gone?"sumiu do CB":""].filter(Boolean);
+  $("det-in").innerHTML=`<div class="det" ${cc(e.c)}>
+    <div class="det-h"><span class="kind ${MAJOR(e.k)?"":"soft"}">${KIND[e.k]||"Outro"}</span><button type="button" class="xbtn" id="det-x" aria-label="Fechar">×</button></div>
+    <h3 tabindex="-1">${esc(e.t)}</h3>
+    <dl>
+      <dt>Quando</dt><dd>${WD[d.getDay()]}, ${d.getDate()} de ${MONL[d.getMonth()]} · <span class="rel ${n>=0&&n<=3?"hot":""}">${rel(n)}</span></dd>
+      ${e.h?`<dt>Horário</dt><dd>${esc(e.h)}</dd>`:""}
+      <dt>Matéria</dt><dd><span class="course" style="color:var(--ink)"><span class="dot"></span>${esc(C.name)}</span></dd>
+      ${e.como?`<dt>Como entregar</dt><dd>${esc(e.como)}</dd>`:""}
+      ${HOLIDAYS[e.d]?`<dt>Atenção</dt><dd style="color:var(--hol-ink)">feriado: ${HOLIDAYS[e.d]}</dd>`:""}
+    </dl>
+    ${flags.length?`<div class="flags">${flags.map(x=>`<span class="flag">${esc(x)}</span>`).join("")}</div>`:""}
+    <div class="det-act">
+      <label class="chk"><input type="checkbox" id="det-done" ${f?"checked":""}>${f?"Feito":"Marcar feito"}</label>
+      ${e.src?`<a class="btn small" href="${e.src}" target="_blank" rel="noopener">Abrir no EAD</a>`:""}
+      <span class="sp"></span>
+      <button type="button" class="btn small" id="det-cal">No calendário</button>
+      <button type="button" class="btn small primary" id="det-edit">Editar</button>
+    </div></div>`;
+  $("det-x").onclick=closeDet;
+  $("det-done").onchange=ev=>{closeDet();setDone(k,ev.target.checked,e.t)};
+  $("det-cal").onclick=()=>{closeDet();goDay(e.d)};
+  $("det-edit").onclick=()=>{closeDet();openForm({k})};
+  if(typeof det.showModal==="function")det.showModal();else det.setAttribute("open","");
+  $("det-in").querySelector("h3").focus({preventScroll:true});
+}
+function closeDet(){if(typeof det.close==="function")det.close();else det.removeAttribute("open")}
+det.addEventListener("click",ev=>{if(ev.target===det)closeDet()});
+function hideToast(){clearTimeout(toastTimer);$("toast").classList.remove("show")}
+function weekStart(s){const d=parse(s);const off=(d.getDay()+6)%7;d.setDate(d.getDate()-off);return d}
+function span(a,b){return a.getMonth()===b.getMonth()?`${a.getDate()} – ${b.getDate()} ${MON[b.getMonth()]}`:`${a.getDate()} ${MON[a.getMonth()]} – ${b.getDate()} ${MON[b.getMonth()]}`}
+function renderList(){
+  const el=$("list");
+  const evs=visible().filter(e=>state.past||(days(e.d)>=0&&!done[key(e)]));
+  const groups=new Map();
+  evs.forEach(e=>{const w=iso(weekStart(e.d));if(!groups.has(w))groups.set(w,[]);groups.get(w).push(e)});
+  let html="";
+  const nf=state.past?0:visible().filter(e=>days(e.d)>=0&&done[key(e)]).length;
+  if(nf)html=`<div class="donebar" style="margin:0 0 12px;border-top:0;padding-top:0"><span>✓ ${nf} ${nf>1?"feitos escondidos":"feito escondido"}</span><button type="button" class="linkbtn" id="list-showdone">Mostrar</button></div>`;
+  if(!evs.length)html+=`<p style="color:var(--muted)">${nf?"Tudo feito por aqui.":"Nada para mostrar com esses filtros."}</p>`;
+  for(const [w,list] of groups){
+    const ws=parse(w),we=new Date(ws);we.setDate(ws.getDate()+6);
+    const load=list.reduce((a,e)=>a+(WEIGHT[e.k]||0),0);
+    const heavy=load>=5;
+    const bars=Array.from({length:8},(_,i)=>`<i class="${i<load?"on":""}"></i>`).join("");
+    const thisWeek=TODAY>=ws&&TODAY<=we;
+    html+=`<div class="week ${heavy?"heavy":""}"><div class="week-h">
+      <span class="lbl ${thisWeek?"now":""}">${thisWeek?"Esta semana":span(ws,we)}</span>
+      <span class="load">${heavy?"semana pesada":""}<span class="bars" role="img" aria-label="carga ${load}">${bars}</span></span></div>
+      ${list.map(evHTML).join("")}</div>`;
+  }
+  el.innerHTML=html;bindChecks(el);
+  if($("list-showdone"))$("list-showdone").onclick=()=>{state.past=true;$("showpast").checked=true;renderList()};
+}
+function renderCal(){
+  const y=Math.floor(state.month/12),m=state.month%12;
+  $("mlabel").textContent=MONL[m]+" "+y;
+  const [lo,hi]=monthBounds();
+  $("prev").disabled=state.month<=lo;
+  $("nextm").disabled=state.month>=hi;
+  const first=new Date(y,m,1),lead=(first.getDay()+6)%7,len=new Date(y,m+1,0).getDate();
+  const byDay={};visible().filter(e=>!e.gone).forEach(e=>{(byDay[e.d]=byDay[e.d]||[]).push(e)});
+  let h="";
+  for(let i=0;i<lead;i++)h+=`<div class="day out" aria-hidden="true"></div>`;
+  for(let d=1;d<=len;d++){
+    const s=iso(new Date(y,m,d)),list=byDay[s]||[],n=days(s);
+    const wd=new Date(y,m,d).getDay();
+    const cls=["day",HOLIDAYS[s]?"hol":"",wd===0||wd===6?"wkd":"",n===0?"today":"",n<0?"past":"",state.sel===s?"sel":""].join(" ");
+    h+=`<button class="${cls}" data-d="${s}" aria-label="${d} de ${MONL[m]}${HOLIDAYS[s]?", feriado":""}, ${list.length} eventos"><span class="num">${d}</span>
+      <span class="tags">${list.slice(0,3).map(e=>`<span class="tag ${MAJOR(e.k)?"":"lite"} ${e.moved||e.novo?"moved":""} ${done[key(e)]?"donetag":""}" ${cc(e.c)}>${esc(short(e.t))}</span>`).join("")}${list.length>3?`<span class="more">+${list.length-3}</span>`:""}</span>
+      ${HOLIDAYS[s]?`<span class="holname"><span class="long">${HOLIDAYS[s]}</span><span class="short">feriado</span></span>`:""}</button>`;
+  }
+  for(let i=(lead+len)%7;i&&i<7;i++)h+=`<div class="day out" aria-hidden="true"></div>`;
+  const cal=$("cal");cal.innerHTML=h;
+  cal.querySelectorAll(".day[data-d]").forEach(b=>b.onclick=()=>{state.sel=state.sel===b.dataset.d?null:b.dataset.d;renderCal();renderDay()});
+}
+function renderDay(){
+  const el=$("daybox");
+  if(!state.sel){el.innerHTML=`<div class="empty">Toque num dia para ver o que tem nele.</div>`;return}
+  const d=parse(state.sel),list=visible().filter(e=>e.d===state.sel);
+  el.innerHTML=`<div class="dayhead"><div class="eyebrow">${WD[d.getDay()]}, ${d.getDate()} de ${MONL[d.getMonth()]}${HOLIDAYS[state.sel]?` · <span class="fer">feriado: ${HOLIDAYS[state.sel]}</span>`:""}</div>
+    <button type="button" class="btn small" id="add-here">+ Adicionar neste dia</button></div>`+
+    (list.length?list.map(evHTML).join(""):`<div class="empty">Nada marcado neste dia.</div>`);
+  bindChecks(el);
+  $("add-here").onclick=()=>openForm({d:state.sel});
+}
+function renderSources(){
+  $("sources").innerHTML=Object.entries(COURSES).filter(([c])=>c!=="OUTRO").map(([c,C])=>`<a href="${C.url}" target="_blank" rel="noopener" ${cc(c)}><span class="dot"></span><span><span class="t">${esc(C.name)}</span> <span class="mono" style="color:var(--muted);font-size:12px">${c}</span><br><span style="color:var(--muted);font-size:13px">${esc(C.detail)}</span></span></a>`).join("")+
+   `<a href="${CRONO_ETICA}" target="_blank" rel="noopener"><span class="dot" style="--cc:var(--muted)"></span><span class="t">Cronograma de Ética Cristã (PDF)</span></a>`+
+   `<a href="${PROJ_PUB}" target="_blank" rel="noopener"><span class="dot" style="--cc:var(--muted)"></span><span class="t">Projeto Leitura – Análise de Tendências (PDF)</span></a>`;
+}
+function renderAll(){renderFilters();renderFocus();renderNext();renderSoon();renderCal();renderDay();renderList()}
+
+/* ---------- criar / editar / excluir evento ---------- */
+const dlg=$("form-dlg"),form=$("ev-form");
+let editing=null,editKey=null;
+$("f-c").innerHTML=Object.entries(COURSES).map(([c,C])=>`<option value="${c}">${esc(C.name)}</option>`).join("");
+function openForm({k,d}={}){
+  editing=k?findEv(k):null;editKey=editing?k:null;
+  const kinds=editing&&!KIND_FORM.includes(editing.k)?KIND_FORM.concat(editing.k):KIND_FORM;
+  $("f-k").innerHTML=kinds.map(x=>`<option value="${x}">${KIND[x]||x}</option>`).join("");
+  $("f-del").hidden=!editing;$("f-err").hidden=true;
+  $("f-reset").hidden=!(editing&&!editing.id&&edits[k]);
+  $("form-title").textContent=editing?"Editar evento":"Novo evento";
+  $("f-c").value=editing?editing.c:(state.only||"COM1254");
+  $("f-k").value=editing?editing.k:"entrega";
+  $("f-t").value=editing?editing.t:"";
+  $("f-d").value=editing?editing.d:(d||iso(TODAY));
+  $("f-h").value=editing?editing.h:"";
+  if(typeof dlg.showModal==="function")dlg.showModal();else dlg.setAttribute("open","");
+  $("f-t").focus();
+}
+function closeForm(){if(typeof dlg.close==="function")dlg.close();else dlg.removeAttribute("open");editing=null;editKey=null}
+function refreshAll(){applyCB();renderUpdated();renderAll();renderHidden()}
+function renderHidden(){
+  const n=Object.values(edits).filter(o=>o&&o.hidden).length,el=$("hidden-info");
+  el.hidden=!n;if(!n)return;
+  el.innerHTML=`${n} ${n>1?"eventos da agenda excluídos":"evento da agenda excluído"} por você. <button type="button" class="linkbtn" id="unhide">Trazer de volta</button>`;
+  $("unhide").onclick=()=>{for(const k in edits)if(edits[k]&&edits[k].hidden)delete edits[k];saveEdits();refreshAll()};
+}
+function showErr(msg){$("f-err").textContent=msg;$("f-err").hidden=false}
+form.addEventListener("submit",ev=>{
+  ev.preventDefault();
+  const t=$("f-t").value.trim(),d=$("f-d").value,h=$("f-h").value.trim(),c=$("f-c").value,k=$("f-k").value;
+  if(!t){showErr("Escreva o que é o evento, por exemplo \"P1\".");$("f-t").focus();return}
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(d)){showErr("Escolha a data do evento.");$("f-d").focus();return}
+  if(editing&&editing.id){Object.assign(editing,{t,d,h,c,k});saveCustom()}
+  else if(editing){edits[editKey]={t,d,h,c,k};saveEdits()}
+  else{custom.push({id:"u"+Date.now().toString(36),t,d,h,c,k});saveCustom()}
+  if(state.only&&state.only!==c)state.only=null;state.sel=d;
+  const dt=parse(d);state.month=dt.getFullYear()*12+dt.getMonth();
+  closeForm();refreshAll();
+});
+$("f-cancel").onclick=closeForm;
+form.addEventListener("input",()=>{$("f-err").hidden=true});
+$("f-del").onclick=()=>{
+  if(!editing)return;
+  const e=editing,k=editKey,nome=short(e.t);
+  if(e.id){
+    const i=custom.indexOf(e);custom.splice(i,1);saveCustom();closeForm();refreshAll();
+    toast(`"${nome}" excluído`,()=>{custom.splice(i,0,e);saveCustom();refreshAll()});
+  }else{
+    const antes=edits[k];edits[k]={hidden:true};saveEdits();closeForm();refreshAll();
+    toast(`"${nome}" excluído`,()=>{if(antes)edits[k]=antes;else delete edits[k];saveEdits();refreshAll()});
+  }
+};
+$("f-reset").onclick=()=>{
+  if(!editKey)return;const k=editKey,antes=edits[k];
+  delete edits[k];saveEdits();closeForm();refreshAll();
+  toast("Evento voltou ao original",()=>{edits[k]=antes;saveEdits();refreshAll()});
+};
+dlg.addEventListener("click",ev=>{if(ev.target===dlg)closeForm()});
+$("new-ev").onclick=$("fab").onclick=()=>openForm({d:state.sel||undefined});
+$("gotoday").onclick=()=>{state.month=TODAY.getFullYear()*12+TODAY.getMonth();state.sel=iso(TODAY);renderCal();renderDay()};
+$("logo-m").textContent=MON[TODAY.getMonth()];$("logo-d").textContent=TODAY.getDate();
+
+/* abas do celular */
+function setTab(t){
+  state.tab=t;document.body.dataset.tab=t;
+  document.querySelectorAll("#tabbar [data-go]").forEach(b=>b.setAttribute("aria-selected",b.dataset.go===t));
+  try{localStorage.setItem("leo20262-aba",t)}catch(e){}
+}
+document.querySelectorAll("#tabbar [data-go]").forEach(b=>b.onclick=()=>{const same=state.tab===b.dataset.go;setTab(b.dataset.go);if(!same)window.scrollTo(0,0)});
+{let t="inicio";try{t=localStorage.getItem("leo20262-aba")||t}catch(e){}setTab(["inicio","cal","semanas"].includes(t)?t:"inicio")}
+$("prev").onclick=()=>{state.month--;renderCal()};
+$("nextm").onclick=()=>{state.month++;renderCal()};
+$("showpast").onchange=ev=>{state.past=ev.target.checked;renderList()};
+$("sync").onclick=()=>checkCB();
+$("changes-ok").onclick=()=>{store.set("leo20262-cbvisto",sigCB());renderChanges()};
+
+/* ---------- puxar a página para baixo para verificar ---------- */
+if(CB_ON){
+  const ptr=$("ptr"),pt=$("ptr-t"),GO=80;let y0=null,dist=0;
+  const place=(y,op)=>{ptr.style.transform=`translate(-50%,${y}px)`;ptr.style.opacity=op};
+  const hide=()=>{ptr.classList.add("anim");ptr.classList.remove("ready","busy");place(-56,0)};
+  addEventListener("touchstart",e=>{
+    if(window.scrollY<=0&&e.touches.length===1&&!dlg.open){y0=e.touches[0].clientY;dist=0;ptr.classList.remove("anim")}else y0=null;
+  },{passive:true});
+  addEventListener("touchmove",e=>{
+    if(y0==null)return;dist=e.touches[0].clientY-y0;
+    if(dist<=0){place(-56,0);return}
+    const p=Math.min(dist,150);place(p*.55-40,Math.min(1,dist/50));
+    const r=dist>=GO;ptr.classList.toggle("ready",r);pt.textContent=r?"Solte para verificar":"Puxe para verificar";
+  },{passive:true});
+  const end=()=>{
+    if(y0==null)return;y0=null;
+    if(dist>=GO&&!cb.busy){
+      ptr.classList.add("anim","busy");ptr.classList.remove("ready");pt.textContent="Verificando o CB…";place(14,1);
+      const t0=Date.now();
+      checkCB().then(()=>{pt.textContent=cb.err?"Sem conexão":cb.changes.length?"Tem mudança no CB":"Tudo igual";ptr.classList.remove("busy");setTimeout(hide,Math.max(900,1400-(Date.now()-t0)))});
+    }else hide();
+    dist=0;
+  };
+  addEventListener("touchend",end,{passive:true});addEventListener("touchcancel",end,{passive:true});
+}
+/* confere ao abrir e ao voltar para o app */
+if(CB_ON)document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&Date.now()-cb.at>60000)checkCB()});
+if(matchMedia("(min-width:861px)").matches)document.querySelectorAll("details.fold").forEach(d=>d.open=true);
+
+renderSources();renderUpdated();renderAll();renderSync();renderChanges();renderHidden();if(CB_ON)checkCB();
+</script>
+
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+}
+</script>
+</body>
+</html>
